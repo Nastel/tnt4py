@@ -1,8 +1,4 @@
 
-# coding: utf-8
-
-# In[1]:
-
 import logging
 import urllib.request
 from urllib.parse import urlparse
@@ -10,7 +6,6 @@ import json
 import http.client
 
 
-# In[2]:
 
 class AuthorizationError(Exception):
     def __init__(self, value):
