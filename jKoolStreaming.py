@@ -32,7 +32,7 @@ class AuthorizationError(Exception):
 class jKoolHandler(logging.Handler):
     """Logging handler that will stream to jKool cloud service"""
         
-    def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com:6580/JESL/event", level=logging.INFO):
+    def __init__(self, accessToken, urlStr="http://test.jkoolcloud.com:6580", level=logging.INFO):
         logging.Handler.__init__(self, level)
         
         self.level = level
@@ -71,7 +71,7 @@ class jKoolHandler(logging.Handler):
         payload={'operation': name, 'type':'EVENT', 'time-usec':time, 'msg-text':message, 'severity':level}
         payload.update(tags)
         formatted = json.dumps(payload, cls = SnapshotEncoder)
-        headers = {'token': self.token, "Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json"}
         
         
         try:
@@ -83,13 +83,13 @@ class jKoolHandler(logging.Handler):
             response = self.connection.getresponse()
             data = response.read()
             print(response.status, response.reason)
+
+            
         
         
     def connect(self):
         if self.secure:
-            conn = http.client.HTTPSConnection(self.host, timeout = 10)
         else:
-            conn = http.client.HTTPConnection(self.host, timeout = 10)
         
         try:
             conn.connect()
@@ -109,7 +109,7 @@ class jKoolHandler(logging.Handler):
         headers = {"Content-Type": "text/plain"}
         
         try:
-            conn.request("POST", "", msg, headers)
+            conn.request("POST", self.path, msg, headers)
         except ConnectionError as err:
             conn.close()
             raise err
