@@ -3,8 +3,8 @@ import urllib.request
 from urllib.parse import urlparse
 import json
 import http.client
-import model
-
+import jKool.metrics
+import uuid
 
 
 
@@ -12,7 +12,7 @@ class SnapshotEncoder(json.JSONEncoder):
     """Allows for Snapshot and Property to be serializable with json.dumps.
     Must add this class to the optional cls param of json.dumps method"""
     def default(self, obj):
-        if isinstance(obj, model.Property) or isinstance(obj, model.Snapshot):
+        if isinstance(obj, jKool.metrics.Property) or isinstance(obj, jKool.metrics.Snapshot):
             return obj.getDict()
 
         return json.JSONEncoder.default(self, obj)
@@ -30,9 +30,9 @@ class AuthorizationError(Exception):
     
     
 class jKoolHandler(logging.Handler):
-    """Logging handler that will stream to jKool cloud service"""
+    """Logging handler that will stream to jKool cloud service."""
         
-    def __init__(self, accessToken, urlStr="http://test.jkoolcloud.com:6580", level=logging.INFO):
+    def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com:6585", level=logging.INFO):
         logging.Handler.__init__(self, level)
         
         self.level = level
@@ -45,8 +45,8 @@ class jKoolHandler(logging.Handler):
         self.secure = ("https" == scheme)
         
         self.host = uri.hostname
-        self.port = uri.port
         self.path = uri.path
+        self.port = uri.port
         
         if self.host == None:
             self.host = "localhost"
@@ -89,7 +89,9 @@ class jKoolHandler(logging.Handler):
         
     def connect(self):
         if self.secure:
+            conn = http.client.HTTPSConnection(self.host, port=self.port, timeout=10)
         else:
+            conn = http.client.HTTPConnection(self.host, port=self.port, timeout=10)
         
         try:
             conn.connect()
@@ -129,7 +131,7 @@ class jKoolHandler(logging.Handler):
 
     
     
-def logEvent(logger, msg_text, source_fqn, tracking_id, time_usec=None, corr_id=None, 
+def logEvent(logger, msg_text, source_fqn, tracking_id=str(uuid.uuid4()), time_usec=None, corr_id=None, 
             exception=None, resource=None, wait_time_used=None, source_url=None,
             severity=logging.INFO, pid=None, tid=None, comp_code=None, reason_code=None,
             location=None, operation=None, user=None, start_time_usec=None, end_time_usec=None,

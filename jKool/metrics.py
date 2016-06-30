@@ -1,3 +1,15 @@
+class Property:
+    """Simple model for user defined properties. Holds a name, value, and type of the property."""
+    def __init__(self, name, value, property_type):
+        self.name = name
+        self.value = value
+        self.property_type = property_type
+    
+    def getDict(self):
+        values = {"name":self.name, "value":self.value, "type":self.property_type}
+        return values
+    
+
 class Snapshot:
     """Simple model for Snapshots. Add the tracking id of the event this Snapshot belongs to 
     with the parent_id argument."""
@@ -8,6 +20,14 @@ class Snapshot:
         self.category = category
         self.properties = properties
         
+        
+    def addProperty(self, name, value, property_type):
+        if self.properties == None:
+            self.properties = [Property(name, value, property_type)]
+        else:
+            self.properties.append(Property(name, value, property_type))
+            
+            
     def getDict(self):
         values = {"name":self.name, "time-usec":self.time_usec, "type":"SNAPSHOT"}
         if self.parent_id != None:
@@ -21,13 +41,4 @@ class Snapshot:
 
 
 
-class Property:
-    """Simple model for user defined properties. Holds a name, value, and type of the property."""
-    def __init__(self, name, value, property_type):
-        self.name = name
-        self.value = value
-        self.property_type = property_type
-    
-    def getDict(self):
-        values = {"name":self.name, "value":self.value, "type":self.property_type}
-        return values
+
