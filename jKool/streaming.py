@@ -32,7 +32,7 @@ class AuthorizationError(Exception):
 class jKoolHandler(logging.Handler):
     """Logging handler that will stream to jKool cloud service."""
         
-    def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com:6585", level=logging.INFO):
+    def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com", level=logging.INFO):
         logging.Handler.__init__(self, level)
         
         self.level = level
