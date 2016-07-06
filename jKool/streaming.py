@@ -76,7 +76,7 @@ class jKoolHandler(logging.Handler):
         
         try:
             self.connection.request("POST", self.path, formatted, headers)
-        except (ConnectionError, TimeoutError) as err:
+        except (ConnectionError, HTTPException, timeout) as err:
             conn.close()
             raise err
         else:
@@ -89,13 +89,22 @@ class jKoolHandler(logging.Handler):
         
     def connect(self):
         if self.secure:
-            conn = http.client.HTTPSConnection(self.host, port=self.port, timeout=10)
+            
+            if self.port != None:
+                conn = http.client.HTTPSConnection(self.host, port=self.port, timeout=10)
+            else:
+                conn = http.client.HTTPSConnection(self.host, timeout=10)
+                
         else:
-            conn = http.client.HTTPConnection(self.host, port=self.port, timeout=10)
+            
+            if self.port != None:
+                conn = http.client.HTTPConnection(self.host, port=self.port, timeout=10)
+            else:
+                conn = http.client.HTTPConnection(self.host, timeout=10)
         
         try:
             conn.connect()
-        except ConnectionError as err:
+        except (ConnectionError, HTTPException) as err:
             conn.close()
             raise err
         else:
@@ -112,7 +121,7 @@ class jKoolHandler(logging.Handler):
         
         try:
             conn.request("POST", self.path, msg, headers)
-        except ConnectionError as err:
+        except (ConnectionError, HTTPException) as err:
             conn.close()
             raise err
         else:
