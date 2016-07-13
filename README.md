@@ -41,18 +41,18 @@ You can also report measurements and metrics like CPU and memory as well as othe
 This is done via Snapshots and Properties in the metrics module. A Snapshot holds a collection of Properties that are user defined.
 
 ### Streaming Events with Snapshots and Custom Properties
-Snapshots can be attached to an Event by using the same tracking id.
+Snapshots can be attached to an Event by adding a list of Snapshots to the snapshots arguement.
 
 ~~~~python
 # generate unique id
-tracking = str(uuid())
+tracking = str(uuid4())
 
 mySnapshot = Snapshot("Payment", 1466662761000000, parent_id=tracking, category="Order")
 mySnapshot.addProperty("order-no", orderNo, "string")
 mySnapshot.addProperty("order-amount", orderAmount, "integer")
 
 # snapshots argument must be a list containing one or more Snapshots
-logEvent(logger, "Order Processed Succesfully", sourcefqn, tracking_id=tracking, snapshots=[mySnapshot])
+logEvent(logger, "Order Processed Succesfully", sourcefqn, corr_id=tracking, snapshots=[mySnapshot])
 ~~~~
 
 Snapshots and Properties are automatically serialized into JSON format.
