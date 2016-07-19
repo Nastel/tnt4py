@@ -1,6 +1,9 @@
 # TNT4PY - Python Streaming
 Stream your logs, metrics, custom KPIs using `jKool.streaming`. Search, create dashboards & analyze your data using jKool @ https://data.jkoolcloud.com.
 
+# License
+Apache V2.0
+
 ## How to Start Streaming
 * Create a jKoolHandler using your access token and optional url and logging level
     * Default url is https://data.jkoolcloud.com
