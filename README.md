@@ -1,4 +1,4 @@
-# PythonStreaming
+# TNT4PY - Python Streaming
 Stream your python logs into jKool automatically using jKool.streaming module.
 
 ## How to Start Streaming
