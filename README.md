@@ -1,12 +1,12 @@
 # TNT4PY - Python Streaming
-Stream your python logs into jKool automatically using jKool.streaming module.
+Stream your logs, metrics, custom KPIs using `jKool.streaming`. Search, create dashboards & analyze your data using jKool @ https://data.jkoolcloud.com.
 
 ## How to Start Streaming
 * Create a jKoolHandler using your access token and optional url and logging level
     * Default url is https://data.jkoolcloud.com
     * Default level is logging.INFO
 * Add this handler to your python loggers.
-* Logs are automatically streamed when logging calls are made.
+* Logs, metrics are automatically streamed when logging calls are made.
 
 ~~~~python
 from jKool import streaming
