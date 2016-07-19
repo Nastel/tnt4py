@@ -13,7 +13,7 @@ from jKool import streaming
 import logging
 
 logger = logging.getLogger("jKool logger")
-hdlr = streaming.jKoolHandler("your-acces-token")
+hdlr = streaming.jKoolHandler("jkool-api-access-token")
 logger.addHandler(hdlr)
 
 logger.error("Test log")
