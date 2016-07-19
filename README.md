@@ -5,9 +5,10 @@ Stream your logs, metrics, custom KPIs using `jKool.streaming`. Search, create d
 Apache V2.0
 
 ## How to Start Streaming
-* Create a jKoolHandler using your access token and optional url and logging level
+* Obtain `jkool-api-access-token` by registering with jKool https://data.jkoolcloud.com. (FREE)
+* Create a jKoolHandler using your `jkool-api-access-token` and optional url and logging level
     * Default url is https://data.jkoolcloud.com
-    * Default level is logging.INFO
+    * Default level is `logging.INFO`
 * Add this handler to your python loggers.
 * Logs, metrics are automatically streamed when logging calls are made.
 
