@@ -25,8 +25,11 @@ logger.error("Test log")
 
 ## Event Stream Decoration
 Events can be decorated/enriched before streaming to jKool. Use `logEvent` helper method with user defined decorations.
-Required parameters are the logger instance, logging message, and the sourcefqn. Source fully qualified name (fqn) is a cannonical event source name with the followin convention `TYPE=name#TYPE=name..#TYPE=name` which is read from left to right and defines containment structure. 
-Example: `APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053` interpreted as Application `PythonStreaming` running on server `PythonServer100` at networkd address `11.0.0.2` in datacenter `DC1` located in geo-location `52.52437,13.41053`.
+Required parameters are the logger instance, logging message, and the sourcefqn. Source fully qualified name (fqn) is a cannonical event source name with the following convention `TYPE=name#TYPE=name..#TYPE=name` which is read from left to right and defines enclosure relationship. 
+
+Example: `APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053` interpreted as application `PythonStreaming` running on server `PythonServer100` at network address `11.0.0.2` in datacenter `DC1` located in geo-location `52.52437,13.41053`. 
+
+Supported types: `USER, APPL, PROCESS, APPSERVER, SERVER, RUNTIME, VIRTUAL, NETWORK, DEVICE, NETADDR, GEOADDR, DATACENTER, DATASTORE, CACHE, SERVICE, QUEUE` 
 
 ~~~~python
 streaming.logEvent(logger, "This is an example",
@@ -40,14 +43,14 @@ sourcefqn = "APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACE
 streaming.logEvent(logger, "This is an example", sourcefqn,
        time_usec=1457524800000000, corr_id="your-correlator-id", location="Atlanta, Ga")
 ~~~~
-Correlators are used to connect/stitch multiple events into a single related activity. Events are related when shared one ore more correlators.
+Correlators are used to connect/stitch multiple events into a single related activity. Any number of events are related when they share one ore more correlators.
 
 ## User Defined Metrics
 You can also report user defined metrics (e.g. CPU, memory, Order Amount).
-This is done via Snapshots and Properties in the metrics module. A Snapshot holds a collection of Properties that are user defined.
+This is done via `Snapshots` and `Properties` in the metrics module. A `Snapshot` holds a collection of user define `Properties`, each property is `name, value, type` pairing.
 
 ### Streaming Events with Snapshots and Custom Properties
-Snapshots can be attached to an Event by adding a list of Snapshots to the snapshots arguement.
+Snapshots can be attached to an `Event` by adding a list of snapshots to the `snapshots` argument.
 
 ~~~~python
 # generate unique id
