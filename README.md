@@ -23,25 +23,27 @@ logger.addHandler(hdlr)
 logger.error("Test log")
 ~~~~
 
-## More Detailed Event Streaming
-To stream more detailed Events to jKool use the logEvent helper method.
-Required parameters are the logger instance, logging message, and the source fqn
+## Event Stream Decoration
+Events can be decorated/enriched before streaming to jKool. Use `logEvent` helper method with user defined decorations.
+Required parameters are the logger instance, logging message, and the sourcefqn. Source fully qualified name (fqn) is a cannonical event source name with the followin convention `TYPE=name#TYPE=name..#TYPE=name` which is read from left to right and defines containment structure. 
+Example: `APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053` interpreted as Application `PythonStreaming` running on server `PythonServer100` at networkd address `11.0.0.2` in datacenter `DC1` located in geo-location `52.52437,13.41053`.
 
 ~~~~python
 streaming.logEvent(logger, "This is an example",
        "APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053")
 ~~~~
 
-Use optional parameters to add more information to your logs.
+Use optional parameters to decorate event streams.
 
 ~~~~python
 sourcefqn = "APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053"
 streaming.logEvent(logger, "This is an example", sourcefqn,
        time_usec=1457524800000000, corr_id="your-correlator-id", location="Atlanta, Ga")
 ~~~~
+Correlators are used to connect/stitch multiple events into a single related activity. Events are related when shared one ore more correlators.
 
-## Measurements and Metrics
-You can also report measurements and metrics like CPU and memory as well as other user defined metrics.
+## User Defined Metrics
+You can also report user defined metrics (e.g. CPU, memory, Order Amount).
 This is done via Snapshots and Properties in the metrics module. A Snapshot holds a collection of Properties that are user defined.
 
 ### Streaming Events with Snapshots and Custom Properties
