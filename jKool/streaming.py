@@ -98,7 +98,7 @@ class jKoolHandler(logging.Handler):
             headers = {"Content-Type": "application/json"}
 
             try:
-                self.connection.request("POST", self.path, formatted, headers)
+                self.connection.request("POST", self.path, message, headers)
             except (ConnectionError, HTTPException, timeout) as err:
                 conn.close()
                 raise err
