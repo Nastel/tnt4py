@@ -72,7 +72,7 @@ class jKoolHandler(logging.Handler):
         """Logging handler that will stream to jKool cloud service using http/s."""
 
         def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com", level=logging.INFO):
-
+                        
             self.level = level
             self.token = accessToken
 
@@ -99,7 +99,7 @@ class jKoolHandler(logging.Handler):
 
             try:
                 self.connection.request("POST", self.path, message, headers)
-            except (ConnectionError, HTTPException, timeout) as err:
+            except (ConnectionError, timeout) as err:
                 conn.close()
                 raise err
             else:
@@ -123,7 +123,7 @@ class jKoolHandler(logging.Handler):
 
             try:
                 conn.connect()
-            except (ConnectionError, HTTPException) as err:
+            except ConnectionError as err:
                 conn.close()
                 raise err
             else:
@@ -140,7 +140,7 @@ class jKoolHandler(logging.Handler):
 
             try:
                 conn.request("POST", self.path, msg, headers)
-            except (ConnectionError, HTTPException) as err:
+            except ConnectionError as err:
                 conn.close()
                 raise err
             else:
@@ -151,7 +151,6 @@ class jKoolHandler(logging.Handler):
                 print("Authorized")
             else:
                 conn.close()
-                print("response.status, response.reason")
                 raise AuthorizationError("Error authorizing token")
 
     
@@ -178,7 +177,7 @@ class jKoolHandler(logging.Handler):
             else:
                 self.client.connect(self.url, self.port, self.keepalive)
                 
-            self.client.loop_start()
+            self.start()
             
             
         def emit(self, record):
@@ -188,12 +187,20 @@ class jKoolHandler(logging.Handler):
             
             result, mid = self.client.publish(topic, message)
             print(result, mid)
+            
+        def stop(self):
+            self.client.loop_stop()
+            
+        def start(self):
+            self.client.loop_start()
     
     
     def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com", level=logging.INFO, protocol="http"):
         logging.Handler.__init__(self, level)
+        
+        protocol = protocol.lower()
 
-        if protocol == "http":
+        if protocol == "http" or protocol == "https":
             self.handler = self.HttpHandler(accessToken, urlStr, level)
         elif protocol == "mqtt":
             self.handler = self.MqttHandler(accessToken, urlStr, level)
