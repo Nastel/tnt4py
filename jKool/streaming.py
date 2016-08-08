@@ -21,11 +21,9 @@ import json
 import http.client
 import jKool.metrics
 import uuid
+import ssl
+    
 
-try:
-    import paho.mqtt.client as mqtt
-except ImportError:
-    print("There was a problem importing paho.mqtt.client. Make sure it is installed before using MqttHandler")
 
 
 
@@ -81,6 +79,7 @@ def on_publish(client, userdata, mid):
 def on_disconnect(client, userdata, rc):
     if rc != 0:
         print("Unexpected disconnection.")
+        client.loop_stop()
     
 
 
@@ -176,11 +175,17 @@ class HttpHandler(logging.Handler):
 class MqttHandler(logging.Handler):
     """Logging handler that streams to jKool using mqtt"""
 
+    def __init__(self, urlStr, topic=None, level=logging.INFO, keepalive=60, username=None, password=None, **ssl_properties):
+        try:
+            import paho.mqtt.client as mqtt
+        except ImportError:
+            print("There was a problem importing paho.mqtt.client. Make sure it is installed before using MqttHandler")
+        
         logging.Handler.__init__(self, level)
         
         self.url = urlStr
         self.port = urlparse(urlStr).port
-
+        self.topic = topic
         self.keepalive = keepalive
 
         self.client = mqtt.Client()
@@ -188,7 +193,23 @@ class MqttHandler(logging.Handler):
         self.client.on_connect = on_connect
         self.client.on_publish = on_publish
         self.client.on_disconnect = on_disconnect
-
+        
+        if username is not None:
+            self.client.username_pw_set(username, password)
+        
+        for key in ("ca_certs", "certfile", "keyfile", "ciphers"):
+            if key in ssl_properties:
+                setattr(self, key, ssl_properties[key])
+            else:
+                setattr(self, key, None)
+        
+        self.cert_reqs = ssl_properties.get("cert_reqs", ssl.CERT_REQUIRED)
+        self.tls_version = ssl_properties.get("tls_version", ssl.PROTOCOL_TLSv1)
+                
+        if self.ca_certs is not None:
+            self.port = 8883
+            self.client.tls_set(self.ca_certs, self.certfile, self.keyfile, self.cert_reqs, self.tls_version, self.ciphers)
+        
         self.connect()
 
 
@@ -203,10 +224,11 @@ class MqttHandler(logging.Handler):
 
 
     def emit(self, record):
-        topic = record.name
+        if self.topic == None:
+            self.topic = record.name
         message = logRecordToJsonString(record)
 
-        result, mid = self.client.publish(topic, message)
+        result, mid = self.client.publish(self.topic, message)
 
     def stop(self):
         self.client.loop_stop()
