@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+import time
+
 class Property:
     """Simple model for user defined properties. Holds a name, value, and type of the property."""
     def __init__(self, name, value, property_type):
@@ -29,7 +31,7 @@ class Property:
 class Snapshot:
     """Simple model for Snapshots. Add the tracking id of the event this Snapshot belongs to 
     with the parent_id argument."""
-    def __init__(self, name, time_usec, parent_id=None, category=None, properties=None):
+    def __init__(self, name, time_usec=int(time.time() * 1000000), parent_id=None, category=None, properties=None):
         self.name = name
         self.time_usec = time_usec
         self.parent_id = parent_id

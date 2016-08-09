@@ -21,6 +21,7 @@ import json
 import http.client
 import jKool.metrics
 import uuid
+import time
 
 HAVE_SSL = True
 try:
@@ -60,10 +61,9 @@ class AuthorizationError(Exception):
     
 def logRecordToJsonString(record):
     name = record.name
-    time = int(record.created) * 1000000
     message = record.getMessage()
     level = record.levelname
-    payload={'operation': name, 'type':'EVENT', 'time-usec':time, 'msg-text':message, 'severity':level}
+    payload={'operation': name, 'type':'EVENT', 'msg-text':message, 'severity':level}
 
 
     extras = record.__dict__
@@ -246,7 +246,7 @@ class MqttHandler(logging.Handler):
 
 
     
-def logEvent(logger, msg_text, source_fqn, tracking_id=str(uuid.uuid4()), time_usec=None, corr_id=None, 
+def logEvent(logger, msg_text, source_fqn, tracking_id=str(uuid.uuid4()), time_usec=int(time.time() * 1000000), corr_id=None, 
             exception=None, resource=None, wait_time_used=None, source_url=None,
             severity=logging.INFO, pid=None, tid=None, comp_code=None, reason_code=None,
             location=None, operation=None, user=None, start_time_usec=None, end_time_usec=None,
