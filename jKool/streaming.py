@@ -21,7 +21,17 @@ import json
 import http.client
 import jKool.metrics
 import uuid
-import ssl
+
+HAVE_SSL = True
+try:
+    import ssl
+except:
+    HAVE_SSL = False
+
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    print("There was a problem importing paho.mqtt.client. Make sure it is installed before using MqttHandler")
     
 
 
@@ -176,10 +186,6 @@ class MqttHandler(logging.Handler):
     """Logging handler that streams to jKool using mqtt"""
 
     def __init__(self, urlStr, topic=None, level=logging.INFO, keepalive=60, username=None, password=None, **ssl_properties):
-        try:
-            import paho.mqtt.client as mqtt
-        except ImportError:
-            print("There was a problem importing paho.mqtt.client. Make sure it is installed before using MqttHandler")
         
         logging.Handler.__init__(self, level)
         
@@ -202,12 +208,14 @@ class MqttHandler(logging.Handler):
                 setattr(self, key, ssl_properties[key])
             else:
                 setattr(self, key, None)
-        
-        self.cert_reqs = ssl_properties.get("cert_reqs", ssl.CERT_REQUIRED)
-        self.tls_version = ssl_properties.get("tls_version", ssl.PROTOCOL_TLSv1)
                 
         if self.ca_certs is not None:
+            if HAVE_SSL == False:
+                raise ValueError("This platform has no SSL/TLS.")
             self.port = 8883
+            self.cert_reqs = ssl_properties.get("cert_reqs", ssl.CERT_REQUIRED)
+            self.tls_version = ssl_properties.get("tls_version", ssl.PROTOCOL_TLSv1)
+            
             self.client.tls_set(self.ca_certs, self.certfile, self.keyfile, self.cert_reqs, self.tls_version, self.ciphers)
         
         self.connect()
