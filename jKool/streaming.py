@@ -60,6 +60,7 @@ class AuthorizationError(Exception):
     
     
 def logRecordToJsonString(record):
+    """Serialize a log record into JSON format"""
     name = record.name
     message = record.getMessage()
     level = record.levelname
@@ -94,7 +95,12 @@ def on_disconnect(client, userdata, rc):
 
 
 class HttpHandler(logging.Handler):
-    """Logging handler that will stream to jKool cloud service using http/s."""
+    """Logging handler that will stream to jKool cloud service using http/s.
+    
+    accessToken - jKool access token for authorization.
+    urlStr - url to stream to. Must include protocol
+    level - logging level for the handler. Defaults to logging.INFO
+    """
 
     def __init__(self, accessToken, urlStr="https://data.jkoolcloud.com", level=logging.INFO):
         logging.Handler.__init__(self, level)
@@ -119,6 +125,7 @@ class HttpHandler(logging.Handler):
 
 
     def emit(self, record):
+        """Serialize log record and send"""
 
         message = logRecordToJsonString(record)
         headers = {"Content-Type": "application/json"}
@@ -183,9 +190,31 @@ class HttpHandler(logging.Handler):
     
 
 class MqttHandler(logging.Handler):
-    """Logging handler that streams to jKool using mqtt"""
+    """Logging handler that streams to jKool using mqtt
+    
+    urlStr - url of mqtt broker to publish methods to
+    
+    topic - topic for streams. Set to logger name if not specified
+    
+    level - logging level for handler. Default set to logging.INFO
+    
+    clean_session - a boolean that determines the client type. If True, the broker will remove all information about this client when it
+    disconnects. If False, the client is a durable client and subscription information and queued messages will be retained when the
+    client disconnects.
+    
+    client_id - the unique client id string used when connecting to the broker. If client_id is zero length or None, then one will be
+    randomly generated. In this case the clean_session parameter must be True.
+    
+    keepalive - maximum period in seconds allowed between communications with the broker. If no other messages are being exchanged, this
+    controls the rate at which the client will send ping messages to the broker
+    
+    username/password - Set a username and optionally a password for broker authentication.
+    
+    ssl_properties - Pass a dictionary or keyword arguements for ssl options. See Paho Python Client documentation for tls_set()
+    """
 
-    def __init__(self, urlStr, topic=None, level=logging.INFO, keepalive=60, username=None, password=None, **ssl_properties):
+    def __init__(self, urlStr, topic=None, level=logging.INFO, clean_session=True, client_id=None, keepalive=60, username=None,
+                 password=None, **ssl_properties):
         
         logging.Handler.__init__(self, level)
         
@@ -194,7 +223,7 @@ class MqttHandler(logging.Handler):
         self.topic = topic
         self.keepalive = keepalive
 
-        self.client = mqtt.Client()
+        self.client = mqtt.Client(client_id, clean_session)
         
         self.client.on_connect = on_connect
         self.client.on_publish = on_publish
