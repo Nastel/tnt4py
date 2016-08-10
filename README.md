@@ -6,7 +6,7 @@ Apache V2.0
 
 ## How to Start Streaming
 * Obtain `jkool-api-access-token` by registering with jKool https://data.jkoolcloud.com. (FREE)
-* Create a jKoolHandler using your `jkool-api-access-token` and optional url and logging level
+* Create a HttpHandler using your `jkool-api-access-token` and optional url and logging level
     * Default streaming url is `https://data.jkoolcloud.com`
     * Default log level is `logging.INFO`
 * Add this handler to your python loggers
@@ -17,11 +17,34 @@ from jKool import streaming
 import logging
 
 logger = logging.getLogger("jKool logger")
-hdlr = streaming.jKoolHandler("jkool-api-access-token")
+hdlr = streaming.HttpHandler("jkool-api-access-token")
 logger.addHandler(hdlr)
 
 logger.error("Test log")
 ~~~~
+
+### Streaming over MQTT
+* `MqttHandler` implements an MQTT client using the Eclipse Paho Python Client API. See the [documentation](https://eclipse.org/paho/clients/python/) for installation instructions.
+* Create an MqttHandler with the url of the mqtt broker to publish to.
+   * Default logging `level` is logging.INFO
+   * Default message topic is the name of the logger but can be specified with `topic` parameter.
+   * Specify a unique client id string with `client_id`. If not specified, one will be generated. In this case the clean_session parameter must be True.
+   * If `clean_session` set to True the broker will remove all information about this client when it disconnects. If False, the client is a durable client and subscription information and queued messages will be retained when the client disconnects. Defaults to True
+   * Use `username` and `password` to set a username/password for broker authentication.
+   * Configure network encryption and authentication options by passing a dictionary or keyword arguements for ssl options. See Paho Python Client [documentation](https://eclipse.org/paho/clients/python/docs/#option-functions) for tls_set() for valid options.
+* Add this handler to your python loggers
+
+~~~python
+# dictionary with ssl options
+options = {"ca_certs":"certificates/ca_certs.crt", "certfile":"path-to-certfile", "keyfile":"path-to-keyfile",
+"cert_reqs":"ssl.CERT_REQUIRED", "tls_version":"ssl.PROTOCOL_TLSv1", "ciphers":"a-cipher"}
+
+# options passed as dict
+MqttHandler("broker-url", topic="tnt4py example", client_id = str(uuid.uuid4()), clean_session=False, **options)
+
+# or specify each
+MqttHandler("broker-url", ca_certs="path-to-ca-file", cert_reqs=ssl.CERT_REQUIRED)
+~~~
 
 ## Event Stream Decoration
 Events can be decorated/enriched before streaming to jKool. Use `logEvent` helper method with user defined decorations.
@@ -41,7 +64,7 @@ Use optional parameters to decorate event streams.
 ~~~~python
 sourcefqn = "APPL=PythonStreaming#SERVER=PythonServer100#NETADDR=11.0.0.2#DATACENTER=DC1#GEOADDR=52.52437,13.41053"
 streaming.logEvent(logger, "This is an example", sourcefqn,
-       time_usec=1457524800000000, corr_id="your-correlator-id", location="Atlanta, Ga")
+       time_usec=int(time.time() * 1000000), corr_id="your-correlator-id", location="Atlanta, Ga")
 ~~~~
 Correlators are used to connect/stitch multiple events into a single related activity. Any number of events are related when they share one ore more correlators.
 
@@ -53,15 +76,12 @@ This is done via `Snapshots` and `Properties` in the metrics module. A `Snapshot
 Snapshots can be attached to an `Event` by adding a list of snapshots to the `snapshots` argument.
 
 ~~~~python
-# generate unique id
-tracking = str(uuid4())
-
-mySnapshot = Snapshot("Payment", 1466662761000000, parent_id=tracking, category="Order")
+mySnapshot = Snapshot("Payment", category="Order")
 mySnapshot.addProperty("order-no", orderNo, "string")
 mySnapshot.addProperty("order-amount", orderAmount, "integer")
 
 # snapshots argument must be a list containing one or more Snapshots
-logEvent(logger, "Order Processed Succesfully", sourcefqn, corr_id=tracking, snapshots=[mySnapshot])
+logEvent(logger, "Order Processed Succesfully", sourcefqn, snapshots=[mySnapshot])
 ~~~~
 
 Snapshots and Properties are automatically serialized into JSON format.
