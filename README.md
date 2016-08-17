@@ -1,5 +1,5 @@
 # TNT4PY - Python Streaming
-Stream your logs, metrics, custom KPIs using `jKool.streaming`. Search, create dashboards & analyze your data using jKool @ https://data.jkoolcloud.com.
+Stream your logs, metrics, custom KPIs using `jKool.streaming`. Search, create dashboards & analyze your data using jKool @ https://www.jkoolcloud.com.
 
 # License
 Apache V2.0
