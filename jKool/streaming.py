@@ -19,9 +19,13 @@ import urllib.request
 from urllib.parse import urlparse
 import json
 import http.client
-import jKool.metrics
 import uuid
 import time
+import argparse
+try:
+    from jKool import metrics
+except ImportError:
+    import metrics
 
 HAVE_SSL = True
 try:
@@ -31,8 +35,9 @@ except:
 
 try:
     import paho.mqtt.client as mqtt
+    import paho.mqtt.publish as publish
 except ImportError:
-    print("There was a problem importing paho.mqtt.client. Make sure it is installed before using MqttHandler")
+    print("There was a problem importing paho.mqtt. Make sure it is installed before using MqttHandler")
     
 
 
@@ -43,7 +48,7 @@ class SnapshotEncoder(json.JSONEncoder):
     """Allows for Snapshot and Property to be serializable with json.dumps.
     Must add this class to the optional cls param of json.dumps method"""
     def default(self, obj):
-        if isinstance(obj, jKool.metrics.Property) or isinstance(obj, jKool.metrics.Snapshot):
+        if isinstance(obj, metrics.Property) or isinstance(obj, metrics.Snapshot):
             return obj.getDict()
 
         return json.JSONEncoder.default(self, obj)
@@ -293,5 +298,44 @@ def logEvent(logger, msg_text, source_fqn, tracking_id=str(uuid.uuid4()), time_u
     
     logger.log(severity, msg_text, extra=arguments)
     
+    
+def main(args):
+    
+    if args.https:
+        conn = http.client.HTTPSConnection("data.jkoolcloud.com", timeout=10)
+        conn.connect()
         
+        msg = "<access-request><token>" + args.https + "</token></access-request>"
+        headers = {"Content-Type": "text/plain"}
+        conn.request("POST", "", msg, headers)
+        response = conn.getresponse()
+        data = response.read()
+        
+        headers = {"Content-Type":"application/json"}
+        msg = {"operation":"tnt4py", "type":"EVENT", "msg-text":args.msg}
+        msg = json.dumps(msg)
+        conn.request("POST", "", msg, headers)
+        response = conn.getresponse()
+        data = response.read()
+        print(response.status, response.reason)
+        conn.close()
+        
+    if args.mqtt:
+        topic = "tnt4py"
+        if args.topic:
+            topic = args.topic
+        publish.single(topic, args.msg, hostname=args.mqtt[0], auth={"username":args.mqtt[1], "password":args.mqtt[2]})  
+        
+        
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Stream a single message to jKool using either Https or Mqtt.')
+    parser.add_argument("msg", help="message to stream")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--https", metavar="TOKEN", help="stream over https. Takes one argument: jKool access token")
+    group.add_argument("--mqtt", nargs=3, metavar=("URL", "USERNAME", "PASSWORD"),
+                       help="stream over mqtt. Takes three arguments: url, username and password")
+    parser.add_argument("-t", "--topic", help="the topic string for which the message to be published. Only used for mqtt")
+    
+    args = parser.parse_args()
+    main(args)
 
