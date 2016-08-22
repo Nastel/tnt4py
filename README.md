@@ -6,6 +6,23 @@ Apache V2.0
 
 ## How to Start Streaming
 * Obtain `jkool-api-access-token` by registering with jKool https://data.jkoolcloud.com. (FREE)
+
+### Easily stream simple messages from command line
+* Get started streaming quickly by calling jKool/streaming.py from the command line.
+* Specify which protocol to use for streaming with `--https` or `--mqtt`
+* See full usage with -h option.
+
+Example stream over https:
+~~~sh
+python streaming.py "Your message to stream" --https your-access-token
+~~~~
+
+Example stream over mqtt:
+~~~sh
+python streaming.py "Your message to stream" --mqtt broker-address your-username your-password --topic python/streams
+~~~
+
+### Incorporate with your python applications
 * Create a HttpHandler using your `jkool-api-access-token` and optional url and logging level
     * Default streaming url is `https://data.jkoolcloud.com`
     * Default log level is `logging.INFO`
